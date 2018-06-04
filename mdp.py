@@ -50,7 +50,9 @@ class policy_t(object):
         pass
 
     # generate episode [state, action, reward, state, .... ], 3n+1 states (n >= 0)
-    def create_episode(self, s):
+    def create_episode(self, s = None):
+        if s is None:
+            s = self.mdp.start_state()
         e, m = [s], self.mdp
         while not m.is_end(s):
             a = self.action(s)
@@ -63,6 +65,7 @@ class policy_t(object):
 # random action policy
 class random_policy_t(policy_t):
     def action(self, s):
+        assert(not self.mdp.is_end(s))
         aa = self.mdp.actions(s)
         return aa[randint(0, len(aa) - 1)]
 

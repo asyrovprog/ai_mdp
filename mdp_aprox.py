@@ -1,6 +1,7 @@
 import mdp
 import random
 from collections import *
+import math
 
 class montecarlo_mdp_t(object):
     def __init__(self, start, states, discount):
@@ -76,40 +77,36 @@ def approximate_model(episodes, start, discount):
     m = montecarlo_mdp_t(start, states, discount)
     return m
 
-# approximate Q-values by ising on-policy model-free Monte Carlo
+# approximate Q-values by ising on-policy model-free Monte Carlo (update on each)
 # returns dictionary of {(state, action): Qp(state, action)}
-def qvalues_monte_carlo(episodes, discount, eta = None):
-    Q = defaultdict(float)
-    N = defaultdict(int)
+def qvalues_monte_carlo(episodes, discount = 1.0):
+    Q = defaultdict(float)  # dictionary of Q(s, a) so far
+    N = defaultdict(int)    # number of updates to (s, a) pair
     for e in episodes:
-        u = 0.0 # current utility
-        for i in range(len(e) - 4, 0, -3):
+        u = 0.0  # current utility
+        for i in range(len(e) - 4, -1, -3):
             s, a, r, sn = e[i], e[i + 1], e[i + 2], e[i + 3]
-            prediction = Q[(s, a)]  # prediction
+            prediction = Q[(s, a)]  # prediction so far
             target = r + discount * u
+            eta = 1.0 / (1.0 + N[(s, a)])
+            Q[(s, a)] = (1 - eta) * prediction + eta * target
+            N[(s, a)] += 1
             u = target
-            _eta = eta
-            if _eta is None:
-                _eta = 1.0 / (1.0 + N[(s, a)])
-                N[(s, a)] += 1
-            Q[(s, a)] = (1 - _eta) * prediction + _eta * target
     return Q
 
-def qvalues_sarsa(episodes, discount, eta = None):
+def qvalues_sarsa(episodes, discount):
     Q, N = defaultdict(float), defaultdict(int)
     def Qp(s, a):
         return 0 if a is None or (s, a) not in Q else Q[(s, a)]
     for e in episodes:
         an = None
-        for i in range(len(e) - 4, 0, -3):
+        for i in range(len(e) - 4, -1, -3):
             s, a, r, sn = e[i], e[i + 1], e[i + 2], e[i + 3]
-            _eta = eta
-            if _eta is None:
-                _eta = 1.0 / (1.0 + N[(s, a)])
-                N[(s, a)] += 1
+            eta = 1.0 / (1.0 + N[(s, a)])
+            N[(s, a)] += 1
             prediction = Qp(s, a)
             target = r + discount * Qp(sn, an)
-            Q[(s, a)] = (1 - _eta) * prediction + _eta * target
+            Q[(s, a)] = (1 - eta) * prediction + eta * target
     return Q
 
 def qvalues_qlearning_ex(episodes, discount, eta = None):
@@ -118,7 +115,7 @@ def qvalues_qlearning_ex(episodes, discount, eta = None):
     Popt = defaultdict()
     N    = defaultdict(int)
     for e in episodes:
-        for i in range(len(e) - 4, 0, -3):
+        for i in range(len(e) - 4, -1, -3):
             s, a, r, sn = e[i], e[i + 1], e[i + 2], e[i + 3]
             _eta = eta
             if _eta is None:

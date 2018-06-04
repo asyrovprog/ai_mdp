@@ -49,7 +49,7 @@ def run(m: mdp.mdp_t, p: quit_policy_t, msg):
 def title(msg):
     mu.separator(msg)
 
-if __name__ == '__main__':
+def run_tests():
     random.seed(time.time())
     m = stay_quit_t()
     stay_policy = stay_policy_t(m)
@@ -90,3 +90,6 @@ if __name__ == '__main__':
     print(mg.policy_evaluation(m, stay_policy))
     print("\nSuboptimal policy (quit) :")
     print(mg.policy_evaluation(m, quit_policy))
+
+if __name__ == '__main__':
+    run_tests()

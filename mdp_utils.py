@@ -1,6 +1,7 @@
 import mdp
 import random
 import mdp_utils as mu
+import mdp_aprox as ma
 
 # convert episode array to string (for debugging and output)
 def episode_to_str(m, e, rounding = 2, add_utility = True):
@@ -12,18 +13,17 @@ def episode_to_str(m, e, rounding = 2, add_utility = True):
         s += " ({})".format(round(mdp.episode_utility(m, e), rounding))
     return s
 
-def run_with_policy(m, policy, descr, cnt = 1000, print_episode = False):
+def run_with_policy(m, policy, descr, cnt = 1000):
     print("\nrunning " + str(cnt) + " episode(s) with " + descr + ":")
-    u = 0.0
-    ea = []
+    episodes = []
     for i in range(0, cnt):
-        e = policy.create_episode(m.start_state())
-        if print_episode:
-            print(mdp.episode_to_str(m, e))
-        u += mdp.episode_utility(m, e)
-        ea.append(e)
-    print("average episode utility: " + str(u / float(cnt)))
-    return ea
+        episodes.append(policy.create_episode(m.start_state()))
+    qvals = ma.qvalues_monte_carlo(episodes, m.discount())
+    e = episodes[0]
+    s, a = e[0], e[1]
+    u = qvals[(s, a)]
+    print("average episode utility: " + str(u))
+    return episodes
 
 def compare_dictionaries(pd, pe):
     failed = True
@@ -49,8 +49,8 @@ def multi_choise(probs):
 def random_choice(arr):
     return arr[random.randint(0, len(arr) - 1)]
 
-def run(m: mdp.mdp_t, p, msg):
-    return mu.run_with_policy(m, p, msg, 10000)
+def run(m: mdp.mdp_t, p, msg, cnt = 10000):
+    return mu.run_with_policy(m, p, msg, cnt)
 
 def separator(msg):
     print("\n===========================================================")
