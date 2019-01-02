@@ -1,4 +1,4 @@
-from demo_volcano_crossing import *
+from demo_03_volcano_crossing import *
 
 if __name__ == '__main__':
     random.seed(time.time())

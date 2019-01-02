@@ -1,7 +1,4 @@
-import mdp
-import random
 from collections import *
-import math
 
 class montecarlo_mdp_t(object):
     def __init__(self, start, states, discount):
@@ -77,7 +74,7 @@ def approximate_model(episodes, start, discount):
     m = montecarlo_mdp_t(start, states, discount)
     return m
 
-# approximate Q-values by ising on-policy model-free Monte Carlo (update on each)
+# approximate Q-values by using on-policy model-free Monte Carlo (update on each)
 # returns dictionary of {(state, action): Qp(state, action)}
 def qvalues_monte_carlo(episodes, discount = 1.0):
     Q = defaultdict(float)  # dictionary of Q(s, a) so far
