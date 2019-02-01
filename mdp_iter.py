@@ -10,8 +10,9 @@ def converged(epsilon, m, V0, V1):
     return epsilon > 0.0 and max(abs(V0[S(k)] - V1[S(k)]) for k in range(N)) < epsilon
 
 
-# given MDP and policy, calculate value (V) of each state. this is, in essence aproximate solution of
-# system of linear equations (which we could also do using elimination, but it is slower)
+# given MDP and policy, calculate value (V) of each state. this is, in essence
+# aproximate solution of system of linear equations (which we could also do
+# using elimination, but it is slower)
 def policy_evaluation(m: mdp_t, p: policy_t, niter = 1000, epsilon = EPSILON):
     V0 = defaultdict(float)  # Vopt(s, a) values, initially all 0
     N = m.size()  # number of states
@@ -34,8 +35,9 @@ def policy_evaluation(m: mdp_t, p: policy_t, niter = 1000, epsilon = EPSILON):
     return V0
 
 
-# given MDP calculate optimal policy (dictionary {state: action}), this is similar to policy evaluation, but
-# at each iteration we recalculate policy based on current approximation of V values
+# given MDP calculate optimal policy (dictionary {state: action}), this is similar
+# to policy evaluation, but at each iteration we recalculate policy based on
+#  current approximation of V values
 def value_iterator(m: mdp_t, niter = 1000, epsilon = EPSILON):
     V0 = defaultdict(float) # Vopt(s, a) values, initially all 0
     P = defaultdict()       # Popt(s) - optimal policy for each state
@@ -66,3 +68,14 @@ def value_iterator(m: mdp_t, niter = 1000, epsilon = EPSILON):
             break
         V0 = V1
     return P
+
+def q_values(m: mdp_t, p: policy_t, niter = 1000, epsilon = EPSILON):
+    V = policy_evaluation(m, p, niter, epsilon)
+    Q = defaultdict(float)
+    for i in range(m.size()):
+        s = m.get_state(i)
+        if not m.is_end(s):
+            for a in m.actions(s):
+                Q[(s, a)] = sum(p * (r + m.discount() * V[sn]) for p, r, sn in m.transitions(s, a))
+    return Q
+

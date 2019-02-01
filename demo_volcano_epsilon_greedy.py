@@ -1,4 +1,4 @@
-from demo_volcano_crossing import *
+from demo_03_volcano_crossing import *
 from mdp_aprox_egreedy import *
 
 if __name__ == '__main__':
