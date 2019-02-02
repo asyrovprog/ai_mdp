@@ -41,10 +41,9 @@ def stochastic_gradient_descent(points, func_grad_of_loss = grad_loss, func_trai
     d = len(points[0][0])
     w = np.array([0.0] * d)
     for i in range(0, iter):
-        print("Training loss:" + str(func_train_loss(points, w)))
+        tl = func_train_loss(points, w)
+        print("Training loss:" + str(tl))
         sys.stdout.flush()
-        if training_loss < epsilon:
-            break
         for j in range(0, len(points)):
             w = w - step * func_grad_of_loss(points[j], w)
     return w
@@ -56,8 +55,9 @@ def gradient_descent(points, gradient_of_loss = grad_train_loss,
     d = len(points[0][0])
     w = np.array([0.0] * d)
     for i in range(0, iter):
-        print("Training loss:" + str(func_train_loss(points, w)))
-        if training_loss < epsilon:
+        tl = func_train_loss(points, w)
+        print("Training loss:" + str(tl))
+        if tl < epsilon:
             break
         w = w - step * gradient_of_loss(points, w)
     return w

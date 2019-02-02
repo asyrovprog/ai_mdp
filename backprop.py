@@ -94,6 +94,17 @@ class MAX(F):
         if not v.const:
             v.backprop(g)
 
+class SOFTMAX(F):
+    def __init__(self, *args):
+        self.vars = args
+        self.const = False
+    def evaluate(self):
+        x = [v.evaluate() for v in self.vars]
+        e_x = np.exp(x - np.max(x))
+        return e_x / e_x.sum()
+    def backprop(self, g):
+        assert(False)
+
 class SIGMOID(F):
     def __init__(self, v):
         self.v = v
@@ -101,10 +112,9 @@ class SIGMOID(F):
     def evaluate(self):
         return 1/(1+math.exp(-self.v.evaluate()))
     def backprop(self, g):
-        i = np.argmax([v.evaluate() for v in self.vars])
-        v = self.vars[i]
-        if not v.const:
-            v.backprop(g)
+        if not self.v.const:
+            z = self.evaluate()
+            self.v.backprop(g * z * (1 - z))
 
 class POW(F):
     def __init__(self, v, p):
