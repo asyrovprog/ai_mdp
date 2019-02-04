@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from demo_linear_predict import *
+from demo_02_linear_predict import *
 
 ALPHA = 0.001
 
@@ -103,7 +103,19 @@ class SOFTMAX(F):
         e_x = np.exp(x - np.max(x))
         return e_x / e_x.sum()
     def backprop(self, g):
-        assert(False)
+        value = self.evaluate()
+        input =  [v.evaluate() for v in self.vars]
+        gradient = [0 for _ in range(len(input))]
+        size = len(value)
+        for i in range(size):
+            for j in range(size):
+                if i == j:
+                    gradient[j] = gradient[i] + value[i] * (1 - input[j])
+                else:
+                    gradient[j] = gradient[i] - value[i] * input[j]
+        for j in range(size):
+            if not self.vars[j].const:
+                self.vars[j].backprop(g[j] * gradient[j] * (1.0 / size))
 
 class SIGMOID(F):
     def __init__(self, v):
@@ -228,8 +240,66 @@ def simple_test3():
 
     print("w1 = {}, w2 = {} ".format(graph.w["x1"], graph.w["x2"]))
 
+def simple_test4():
+    X = []
+    P = []
+    ops = []
+    for i in range(3):
+        xi = VAR("x" + str(i))
+        wi = W("w" + str(i), 0)
+        X.append(xi)
+        P.append(wi)
+        ops.append(MULT(xi, wi))
+
+    graph = SOFTMAX(*ops)
+
+    def target():
+        i = [v.evaluate() for v in X]
+        f = [-i[0], i[1], -i[2]]
+        res = [0, 0, 0]
+        res[np.argmax(f)] = 1
+        return res
+
+    def pred(f):
+        res = [0, 0, 0]
+        res[np.argmax(f)] = 1
+        return res
+
+    def loss(prediction, target, epsilon=1e-12):
+        prediction = np.clip(prediction, epsilon, 1-epsilon)
+        return target * math.log(prediction + 1e-9)
+
+
+
+    for i in range(10000):
+        for j in range(3):
+            X[j].set(np.random.uniform(-3, 3))
+
+        label = target()
+        prediction = graph.evaluate()
+        error = sum([loss(prediction[i], label[i]) for i in range(len(label))])/len(label)
+        graph.backprop([error for _ in range(3)] )
+
+    for i in range(10):
+        for j in range(3):
+            X[j].set(np.random.uniform(-3, 3))
+
+        label = target()
+        prediction = graph.evaluate()
+        error = -(label - prediction)
+        graph.backprop(error)
+
+        print("{} {} {} | {} | {}".format(X[0].evaluate(), X[1].evaluate(), X[2].evaluate(), label, pred(prediction)))
+
+        # https://www.codeblogbt.com/archives/537094
+        # https://stackoverflow.com/questions/47377222/cross-entropy-function-python
+
+    print([w.evaluate() for w in P])
+
+
 
 if __name__ == "__main__":
     # simple_test1()
     # simple_test2()
-    simple_test3()
+    # simple_test3()
+    simple_test4()
